@@ -2,7 +2,7 @@
 #
 # HYPERCAT.PY
 # Copyright (c) 2013 Pilgrim Beart <firstname.lastname@1248.io>
-# 
+#
 # Enables easy creation of valid Hypercat catalogues
 # Written to comply with IoT Ecosystems Demonstrator Interoperability Action Plan V1.0 24th June 2013
 # As found at http://www.openiot.org/apis
@@ -70,17 +70,17 @@
 #
 # To deal with this, within this module we maintain a universal base class for every hypercat object.
 # Then during output, we ignore grand-children, and modify attributes as necessary.
- 
+
 import json
 
 REL = "rel"
 VAL = "val"
 
 # Catalogue structure
-CATALOGUE_METADATA  = "item-metadata"    # Name of the array of metadata about the catalogue itself
+CATALOGUE_METADATA  = "catalogue-metadata"    # Name of the array of metadata about the catalogue itself
 ITEMS = "items"
 HREF = "href"
-ITEM_METADATA = "i-object-metadata" # Name of the array of metadata about each item in the catalogue
+ITEM_METADATA = "item-metadata" # Name of the array of metadata about each item in the catalogue
 
 # Mandatory relations & types
 ISCONTENTTYPE_RELATION = "urn:X-hypercat:rels:isContentType"  # Mandatory for catalogues, but not resources
@@ -127,11 +127,11 @@ class Base:
         for i in self.metadata:
             r = r + i[REL]
         return []
-        
+
     def values(self, rel):
-        """Returns a LIST of the values of all relations of type rel, since HyperCat allows rels to be repeated"""
+        """Returns a LIST of the values of all relations of type rel, since Hypercat allows rels to be repeated"""
         return _values(self.metadata, rel)
-    
+
     def prettyprint(self):
         """Return hypercat formatted prettily"""
         return json.dumps(self.asJSON(), sort_keys=True, indent=4, separators=(',', ': '))
@@ -145,7 +145,7 @@ class Base:
 
     def setHref(self,href):
         self.href=href
-        
+
 class Hypercat(Base):
     """Create a valid Hypercat catalogue"""
     # Catalogues must be of type catalogue, have a description, and contain at least an empty array of items
@@ -177,7 +177,7 @@ class Hypercat(Base):
         for item in self.items:
             assert item.href != href, "All items in a catalogue must have unique hrefs : "+href
         self.items += [child]           # Add new
-        return        
+        return
 
     def replaceItem(self, child, href):
         """Replace an existing child (by matching the href). Guarantees not to change the order of items[]"""
@@ -193,7 +193,7 @@ class Hypercat(Base):
 
     def items(self):
         return self.items
-    
+
     def supportsSimpleSearch(self):
         self.addRelation(SUPPORTS_SEARCH_RELATION, SUPPORTS_SEARCH_VAL)
 
@@ -219,7 +219,7 @@ class Hypercat(Base):
         for i in self.items:
             if isinstance(i, Hypercat):
                 self.recurse(i, *args)
-        
+
 class Resource(Base):
     """Create a valid Hypercat Resource"""
     # Resources must have an href, have a declared type, and have a description
@@ -236,7 +236,7 @@ class Resource(Base):
         j[ITEM_METADATA] = self.metadata
         j[HREF] = self.href
         return j
-    
+
 def loads(inputStr):
     """Takes a string and converts it into an internal hypercat object, with some checking"""
     inCat = json.loads(inputStr)
@@ -260,4 +260,3 @@ if __name__ == '__main__':
     # Unit tests
     import unittest
     unittest.unittest()
-
